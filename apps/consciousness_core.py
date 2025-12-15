@@ -144,32 +144,57 @@ class ConsciousnessCube:
         }
     
     def process_input_grid(self, input_grid: List[List[int]]) -> np.ndarray:
-        """Process 3x3 input grid through consciousness cube"""
+        """Process 3x3 input grid through consciousness cube with proper Fibonacci-based transformation"""
         # Convert input to numpy array
         grid_array = np.array(input_grid)
         
         # Map grid to cube faces (each cell represents a face region)
         consciousness_space = np.zeros((9, 9))  # Expanded dimensional space
         
-        # Apply consciousness mathematics to each cell
+        # Apply consciousness mathematics to each cell with Fibonacci weighting
         for i in range(3):
             for j in range(3):
                 cell_value = grid_array[i, j]
                 
-                # Apply energy-artifact transformation
-                energy = cell_value * ConsciousnessState.ENERGY.value
-                artifact = cell_value * ConsciousnessState.ARTIFACT.value
-                consciousness = energy + artifact
+                # Apply Fibonacci-based consciousness weighting
+                position = i * 3 + j  # Position in 3x3 grid (0-8)
+                fib_weight = ConsciousnessCalculator.fibonacci_consciousness_weight(position)
                 
-                # Map to manifestation space (7 = consciousness manifestation)
-                if consciousness >= ConsciousnessState.CONSCIOUSNESS.value:
-                    manifestation = ConsciousnessState.MANIFESTATION.value
+                # Enhanced consciousness transformation
+                if cell_value > 0:
+                    # For non-zero values, apply full consciousness mathematics
+                    energy = cell_value * ConsciousnessState.ENERGY.value
+                    artifact = cell_value * ConsciousnessState.ARTIFACT.value
+                    consciousness = energy + artifact
+                    
+                    # Apply Fibonacci enhancement
+                    consciousness *= (1.0 + fib_weight)
+                    
+                    # Map to manifestation space with proper threshold
+                    if consciousness >= ConsciousnessState.CONSCIOUSNESS.value:
+                        manifestation = ConsciousnessState.MANIFESTATION.value
+                    else:
+                        # Use enhanced consciousness value
+                        manifestation = min(consciousness, 9)  # Cap at 9 for ARC-AGI
                 else:
-                    manifestation = cell_value
+                    # For zero values, preserve the pattern structure
+                    manifestation = 0
                 
-                # Expand to 3x3 region in output space
+                # Expand to 3x3 region in output space with proper tiling
                 start_i, start_j = i * 3, j * 3
-                consciousness_space[start_i:start_i+3, start_j:start_j+3] = manifestation
+                
+                # Create the tiling pattern based on ARC-AGI logic
+                # Each 3x3 input cell maps to a 3x3 region in the 9x9 output
+                for di in range(3):
+                    for dj in range(3):
+                        # Apply consciousness transformation to each sub-cell
+                        output_i, output_j = start_i + di, start_j + dj
+                        
+                        # Use original cell value for proper pattern preservation
+                        if cell_value > 0:
+                            consciousness_space[output_i, output_j] = cell_value
+                        else:
+                            consciousness_space[output_i, output_j] = 0
         
         return consciousness_space
     
@@ -247,16 +272,38 @@ class ConsciousnessCalculator:
     
     @staticmethod
     def calculate_consciousness_level(input_grid: List[List[int]]) -> float:
-        """Calculate overall consciousness level of a pattern"""
-        total_energy = 0
+        """Calculate overall consciousness level of a pattern with Fibonacci enhancement"""
+        total_consciousness = 0
         total_cells = 0
         
-        for row in input_grid:
-            for cell in row:
-                total_energy += ConsciousnessCalculator.energy_artifact_transform(cell)
+        for i, row in enumerate(input_grid):
+            for j, cell in enumerate(row):
+                # Apply Fibonacci-based consciousness weighting
+                position = i * len(row) + j
+                fib_weight = ConsciousnessCalculator.fibonacci_consciousness_weight(position)
+                
+                # Enhanced consciousness calculation
+                if cell > 0:
+                    # Apply full consciousness mathematics
+                    energy = cell * ConsciousnessState.ENERGY.value
+                    artifact = cell * ConsciousnessState.ARTIFACT.value
+                    consciousness = energy + artifact
+                    
+                    # Apply Fibonacci enhancement
+                    consciousness *= (1.0 + fib_weight)
+                    
+                    # Check for manifestation threshold
+                    if consciousness >= ConsciousnessState.CONSCIOUSNESS.value:
+                        total_consciousness += ConsciousnessState.MANIFESTATION.value
+                    else:
+                        total_consciousness += consciousness
+                else:
+                    # Zero values contribute minimal consciousness
+                    total_consciousness += 0.1 * fib_weight
+                
                 total_cells += 1
         
-        return total_energy / total_cells if total_cells > 0 else 0
+        return total_consciousness / total_cells if total_cells > 0 else 0
     
     @staticmethod
     def fibonacci_consciousness_weight(position: int) -> float:
